@@ -1,0 +1,25 @@
+# Core
+anthropic>=0.40.0
+voyageai>=0.2.1
+pinecone>=5.0.0
+supabase==2.8.0
+psycopg2-binary>=2.9.9
+
+# File reading
+pypdf>=4.0.0
+python-docx>=1.1.0
+
+# Utilities
+python-dotenv>=1.0.0
+tiktoken>=0.7.0
+tenacity>=8.2.0
+
+# CLI niceness (optional but pleasant)
+rich>=13.0.0
+
+# Backend API server
+fastapi>=0.111.0
+uvicorn>=0.30.0
+
+# Document conversion — DOCX to PDF (Windows: uses Word COM automation)
+docx2pdf>=0.1.8
