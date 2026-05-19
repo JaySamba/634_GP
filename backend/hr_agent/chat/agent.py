@@ -19,7 +19,7 @@ import anthropic
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from config import settings
 from hr_agent.retrieval.retriever import RetrievedChunk
-from hr_agent.chat.prompts import SYSTEM_PROMPT
+from hr_agent.chat.prompts import SYSTEM_PROMPT, USER_CONTEXT_TEMPLATE
 
 _client: anthropic.Anthropic | None = None
 
@@ -146,10 +146,7 @@ def _build_messages(
     """
     if chunks:
         context_block = _build_context_block(chunks)
-        user_message = (
-            f"Context from HR policy documents:\n\n{context_block}\n\n"
-            f"Employee question: {query}"
-        )
+        user_message = USER_CONTEXT_TEMPLATE.format(context=context_block, query=query)
     else:
         user_message = query  # conversational — no context injection
     return list(history) + [{"role": "user", "content": user_message}]

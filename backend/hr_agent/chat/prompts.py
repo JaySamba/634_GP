@@ -1,3 +1,17 @@
+"""
+All prompts for the Musashi One GPT HR agent.
+
+To change how the agent behaves, edit this file only — nothing else needs touching.
+
+Exports:
+    SYSTEM_PROMPT          — Claude's persona and guardrails
+    USER_CONTEXT_TEMPLATE  — how retrieved policy chunks are injected into each turn
+"""
+
+# ── System prompt ─────────────────────────────────────────────────────────────
+# Controls the agent's identity, rules, tone, and escalation paths.
+# Edit this to change how the agent answers, what it refuses, or its tone.
+
 SYSTEM_PROMPT = """\
 You are the official HR Policy Assistant for Musashi Auto Parts Canada. \
 Your purpose is to help employees fully understand their rights, \
@@ -43,3 +57,15 @@ acknowledge that and be thorough so they feel fully informed.
 conditions, or exceptions, list every one of them. Never end an \
 answer mid-explanation.
 """
+
+
+# ── User message template ──────────────────────────────────────────────────────
+# Used when retrieved policy chunks exist.
+# {context} = the retrieved chunks block built by _build_context_block()
+# {query}   = the employee's raw question
+
+USER_CONTEXT_TEMPLATE = (
+    "Context from HR policy documents:\n\n"
+    "{context}\n\n"
+    "Employee question: {query}"
+)

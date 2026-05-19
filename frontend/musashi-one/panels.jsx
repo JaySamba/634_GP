@@ -479,6 +479,64 @@ function ConnectingPanel({ label }) {
   );
 }
 
+// ── Scramble text animation ───────────────────────────────────────────────────
+// Each newly streamed character cycles through random symbols for ~180ms
+// before snapping to the real character. Only used for agent messages.
+const _SCRAMBLE_CHARS = '!<>-_\\/[]{}=+*^?#@$%&ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+const _SCRAMBLE_MS    = 180;  // duration per character
+const _SCRAMBLE_LAG   = 12;   // ms stagger between successive chars
+
+function ScrambleText({ text }) {
+  const [displayed, setDisplayed] = React.useState(text);
+  const sRef = React.useRef({ text, active: [], rafId: null });
+
+  React.useEffect(() => {
+    const s = sRef.current;
+    const prevLen = s.text.length;
+    s.text = text;
+
+    if (text.length < prevLen) {
+      s.active = [];
+      setDisplayed(text);
+      return;
+    }
+
+    const now = performance.now();
+    for (let i = prevLen; i < text.length; i++) {
+      const c = text[i];
+      if (c !== ' ' && c !== '\n' && c !== '\t') {
+        s.active.push({ index: i, endMs: now + _SCRAMBLE_MS + (i - prevLen) * _SCRAMBLE_LAG });
+      }
+    }
+
+    if (s.rafId) return; // loop already running — it will pick up new entries
+
+    const animate = () => {
+      const now = performance.now();
+      const chars = sRef.current.text.split('');
+      sRef.current.active = sRef.current.active.filter(({ index, endMs }) => {
+        if (now >= endMs || index >= chars.length) return false;
+        chars[index] = _SCRAMBLE_CHARS[Math.floor(Math.random() * _SCRAMBLE_CHARS.length)];
+        return true;
+      });
+      setDisplayed(chars.join(''));
+      if (sRef.current.active.length > 0) {
+        sRef.current.rafId = requestAnimationFrame(animate);
+      } else {
+        sRef.current.rafId = null;
+        setDisplayed(sRef.current.text);
+      }
+    };
+    s.rafId = requestAnimationFrame(animate);
+  }, [text]);
+
+  React.useEffect(() => () => {
+    if (sRef.current.rafId) cancelAnimationFrame(sRef.current.rafId);
+  }, []);
+
+  return <span style={{ whiteSpace: 'pre-wrap' }}>{displayed}</span>;
+}
+
 const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://localhost:8501'
   : '/api';
@@ -593,7 +651,9 @@ function ChatPanel({ breadcrumb, onBack, agentLabel, accent }) {
           {messages.map((m, i) => (
             <div key={i} className={`m1-msg m1-msg-${m.role}`}>
               {m.role === 'agent' && <div className="m1-msg-avatar">◉</div>}
-              <div className="m1-msg-bubble">{m.text}</div>
+              <div className="m1-msg-bubble">
+                {m.role === 'agent' ? <ScrambleText text={m.text} /> : m.text}
+              </div>
             </div>
           ))}
           {thinking && (
