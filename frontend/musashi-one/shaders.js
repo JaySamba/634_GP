@@ -156,48 +156,96 @@ void main(){
 }`;
 
   // ── 4. Particle Constellation ─────────────────────────────────────────
+  // Stars on a grid, each connected to adjacent neighbors with gray lines.
+  // Both stars and lines flow toward the cursor.
   const FRAG_PARTICLES = COMMON + `
-float star(vec2 p, vec2 c, float s){
-  float d = length(p - c);
-  return smoothstep(s, 0.0, d);
+
+// Distance from point p to segment a-b
+float segDist(vec2 p, vec2 a, vec2 b){
+  vec2 ab = b - a;
+  float d2 = dot(ab, ab);
+  if(d2 < 0.00001) return length(p - a);
+  float t = clamp(dot(p - a, ab) / d2, 0.0, 1.0);
+  return length(p - a - ab * t);
 }
+
+// Star position in UV space for grid cell c, attracted toward cursor m
+vec2 sPos(vec2 c, vec2 m, float t, float S){
+  float h1 = hash(c);
+  float h2 = hash(c + vec2(17.3, 43.7));
+  vec2 j = vec2(h1, h2);
+  // slow drift
+  j += vec2(sin(t * 0.4 + h1 * 25.0), cos(t * 0.35 + h2 * 25.0)) * 0.2;
+  j = clamp(j, 0.05, 0.95);
+  vec2 pos = (c + j) / S;
+  // cursor attraction — stars drift toward cursor when nearby
+  vec2 d = m - pos;
+  return pos + d * exp(-dot(d, d) * 7.0) * 0.25;
+}
+
 void main(){
   vec2 res = u_resolution;
-  vec2 uv  = (gl_FragCoord.xy - 0.5 * res) / min(res.x, res.y);
-  vec2 m   = (u_mouseSmooth - 0.5 * res) / min(res.x, res.y);
+  vec2 uv = (gl_FragCoord.xy - 0.5 * res) / min(res.x, res.y);
+  vec2 m  = (u_mouseSmooth - 0.5 * res) / min(res.x, res.y);
+  float t = u_time;
 
-  vec3 col = vec3(0.01, 0.015, 0.035);
+  const float S    = 4.5;          // grid density — ~60 stars on 1080p
+  const float maxD = 1.85 / S;     // max distance to draw a connecting line
 
-  // cell-based particle field
-  vec2 grid = uv * 14.0;
-  vec2 cell = floor(grid);
-  vec2 cf   = fract(grid) - 0.5;
-  float intensity = 0.0;
-  for(int dy = -1; dy <= 1; dy++){
-    for(int dx = -1; dx <= 1; dx++){
-      vec2 c = cell + vec2(dx, dy);
-      vec2 jitter = vec2(hash(c), hash(c + 17.0)) - 0.5;
-      // magnetic pull toward cursor
-      vec2 cellWorld = (c + 0.5 + jitter) / 14.0;
-      vec2 pull = (m - cellWorld);
-      float pullStr = exp(-length(pull) * 3.5) * 0.4;
-      jitter += pull * pullStr * 7.0;
-      float twinkle = 0.6 + 0.4 * sin(u_time * 1.5 + hash(c) * 30.0);
-      intensity += star(cf, vec2(dx, dy) + jitter, 0.06 * twinkle);
+  vec2 gc = floor(uv * S);
+
+  vec3  col = vec3(0.02, 0.025, 0.05);
+  float sg  = 0.0;   // star glow accumulator
+  float lg  = 0.0;   // line glow accumulator
+
+  // 3×3 neighborhood: renders all stars and lines visible from this fragment
+  for(int cy = -1; cy <= 1; cy++){
+    for(int cx = -1; cx <= 1; cx++){
+      vec2 ca = gc + vec2(float(cx), float(cy));
+      vec2 pa = sPos(ca, m, t, S);
+
+      // Star dot + halo
+      float dd = length(uv - pa);
+      float tw = 0.65 + 0.35 * sin(t * 2.2 + hash(ca) * 30.0); // twinkle
+      sg += tw * (smoothstep(0.018, 0.0, dd) + 0.12 * smoothstep(0.1, 0.0, dd));
+
+      // Lines to 4 "forward" neighbors — covers every edge exactly once
+      // (+1,0)  (+1,+1)  (0,+1)  (-1,+1)
+      vec2 pb; float fd, ld;
+
+      pb = sPos(ca + vec2( 1.0, 0.0), m, t, S);
+      fd = length(pa - pb);
+      if(fd < maxD){ ld = segDist(uv, pa, pb); lg += (1.0 - fd / maxD) * smoothstep(0.005, 0.0, ld); }
+
+      pb = sPos(ca + vec2( 1.0, 1.0), m, t, S);
+      fd = length(pa - pb);
+      if(fd < maxD){ ld = segDist(uv, pa, pb); lg += (1.0 - fd / maxD) * smoothstep(0.005, 0.0, ld); }
+
+      pb = sPos(ca + vec2( 0.0, 1.0), m, t, S);
+      fd = length(pa - pb);
+      if(fd < maxD){ ld = segDist(uv, pa, pb); lg += (1.0 - fd / maxD) * smoothstep(0.005, 0.0, ld); }
+
+      pb = sPos(ca + vec2(-1.0, 1.0), m, t, S);
+      fd = length(pa - pb);
+      if(fd < maxD){ ld = segDist(uv, pa, pb); lg += (1.0 - fd / maxD) * smoothstep(0.005, 0.0, ld); }
     }
   }
-  // shockwave on click
-  float d = length(uv - m);
-  float shock = exp(-pow(d * 4.0 - u_click * 8.0, 2.0) * 1.5) * u_click;
-  intensity += shock * 0.8;
 
-  vec3 particleCol = mix(vec3(0.5, 0.7, 1.0), vec3(0.9, 0.8, 1.0), smoothstep(0.0, 1.5, intensity));
-  col += intensity * particleCol;
+  // Blue-white stars
+  col += sg * vec3(0.75, 0.88, 1.0);
+  // Gray connecting lines (slightly blue-tinted so they read on dark bg)
+  col += lg * 0.32 * vec3(0.48, 0.55, 0.72);
 
-  // faint connecting field
-  col += 0.05 * exp(-length(uv - m) * 1.5) * vec3(0.5, 0.7, 1.0);
+  // Soft cursor glow — illuminates nearby stars and lines
+  float md = length(uv - m);
+  col += 0.18 * exp(-md * md * 2.8) * vec3(0.35, 0.55, 1.0);
 
-  col *= 1.0 - 0.5 * length(uv);
+  // Click shockwave ring
+  float shock = exp(-pow(md * 5.0 - u_click * 10.0, 2.0) * 1.5) * u_click;
+  col += shock * 0.65 * vec3(0.6, 0.8, 1.0);
+
+  // Vignette
+  col *= 1.0 - 0.42 * dot(uv, uv);
   gl_FragColor = vec4(col, 1.0);
 }`;
 

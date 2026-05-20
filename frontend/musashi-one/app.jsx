@@ -70,7 +70,7 @@ function App() {
   const [region, setRegion] = useState(null);
   const [hoverRegion, setHoverRegion] = useState(null);
   const [plant, setPlant] = useState(null);
-  const [shaderId, setShaderId] = useState('mercury');
+  const [shaderId, setShaderId] = useState('particles');
   const [direction, setDirection] = useState(1);
   const [zooming, setZooming] = useState(false);
 
