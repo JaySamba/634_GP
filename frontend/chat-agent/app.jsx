@@ -1,6 +1,6 @@
 /* Main ChatApp — wires everything together, streams from real API */
 
-const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+const CHAT_API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'http://localhost:8501'
   : '/api';
 
@@ -105,7 +105,7 @@ const ChatApp = ({ onBack, agentLabel, scope, region, accent }) => {
     let citationIds = [];
 
     try {
-      const res = await fetch(`${API_BASE}/chat`, {
+      const res = await fetch(`${CHAT_API_BASE}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
