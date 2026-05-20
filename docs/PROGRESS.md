@@ -1,8 +1,8 @@
 # HR Agent — Project Progress Tracker
 # Updated by Claude Code after every task
 
-Last updated: 2026-05-19
-Overall status: All phases complete + UI overhaul v2 + Chat Agent full-screen takeover implemented (sidebar, citations, right panel, templates, slash commands, dark/light theme) + real SSE streaming wired + [[n]] inline citations + guest user mode with MS sign-in placeholder + conversation API endpoints added + folders/pinned migration created
+Last updated: 2026-05-20
+Overall status: All phases complete + UI overhaul v2 + Chat Agent full-screen takeover implemented + Playwright E2E test suite created (30 UI tests, all passing)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PHASE 0 — Accounts & External Services         ✅ COMPLETE
@@ -447,3 +447,40 @@ CURRENT PROJECT STRUCTURE
       ├── architecture.md
       ├── PROGRESS.md               This file
       └── ERRORS.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+E2E TEST SUITE — Playwright                                  COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Files created:
+  [✅] package.json             — Node project + @playwright/test ^1.44.0
+  [✅] playwright.config.js     — 2 projects: ui (port 8080) + api (port 8501)
+  [✅] tests/TEST_CASES.md      — 40 documented test cases (N, C, R, A suites)
+  [✅] tests/e2e/01_navigation.spec.js  — N-01–N-08 (8 tests)
+  [✅] tests/e2e/02_chat_ui.spec.js     — C-01–C-13 (13 tests)
+  [✅] tests/e2e/03_citations.spec.js   — R-01–R-09 (9 tests)
+  [✅] tests/e2e/04_api.spec.js         — A-01–A-10 (10 tests, require backend)
+
+  UI test results (30 tests, no backend needed — mocked /chat):
+  [✅] N-01–N-08  8/8  Navigation flow (landing → scope → function → region → chat → back)
+  [✅] C-01–C-13 13/13 Chat UI (welcome, templates, streaming, sidebar, theme, shortcuts)
+  [✅] R-01–R-09  9/9  Citations & right panel (inline cite, chips, panel open/close/meta)
+
+  Bugs discovered and fixed during test authoring:
+  [✅] const API_BASE redeclaration (panels.jsx + app.jsx both declared it)
+       → renamed to CHAT_API_BASE in chat-agent/app.jsx
+  [✅] [[1]] in mock SSE text resolved to DOCS["1"] (undefined) — right panel returned null
+       → changed mock text to [[hr-vac-2025]] to match pre-seeded DOCS key
+  [✅] C-06 stop button flaky with instant mock (React 18 batches isStreaming true→false)
+       → C-06 now uses a 600ms delayed route override so the stop button renders
+  [✅] C-04 strict mode violation (user text + assistant text both matched /vacation policy/i)
+       → scoped assertion to .bubble.assistant-prose
+
+  Run UI tests:
+    npx playwright test --project=ui
+
+  Run API tests (requires backend on :8501):
+    npx playwright test --project=api
+
+  Run all:
+    npx playwright test
