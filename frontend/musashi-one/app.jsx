@@ -78,6 +78,7 @@ function App() {
   const globeCanvasRef = useRef(null);
   const bgRef = useRef(null);
   const globeRef = useRef(null);
+  const onBackRef = useRef(null);
 
   // Init shader background
   useEffect(() => {
@@ -106,6 +107,13 @@ function App() {
     }
   }, [needGlobe]);
 
+  // Intercept browser back button and route it through app navigation
+  useEffect(() => {
+    const handle = () => onBackRef.current?.();
+    window.addEventListener('popstate', handle);
+    return () => window.removeEventListener('popstate', handle);
+  }, []);
+
   // Push hover/selection to the globe each frame target
   useEffect(() => {
     if (!globeRef.current) return;
@@ -118,6 +126,7 @@ function App() {
     setDirection(dir);
     setHistory(h => dir > 0 ? [...h, step] : h.slice(0, -1));
     setStep(next);
+    if (dir > 0) window.history.pushState(null, '');
   };
 
   const onEnter = () => go('scope');
@@ -182,6 +191,9 @@ function App() {
     else go('landing', -1);
   };
 
+  // Keep ref current so the popstate listener always calls the latest onBack
+  onBackRef.current = onBack;
+
   const onHome = () => {
     setHistory([]);
     setScope(null); setFn(null); setRegion(null); setPlant(null); setHoverRegion(null);
@@ -220,6 +232,19 @@ function App() {
   })();
 
   const headerVisible = step !== 'landing';
+
+  // Full-screen takeover — replaces the entire m1-root UI when chat is active
+  if (step === 'chat') {
+    return (
+      <window.ChatApp
+        onBack={onBack}
+        agentLabel={agentLabel}
+        scope={scope}
+        region={region}
+        accent={accent}
+      />
+    );
+  }
 
   return (
     <div className="m1-root" style={{ '--accent': accent }}>

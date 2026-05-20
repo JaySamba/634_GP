@@ -125,8 +125,8 @@ def chunks_to_sources(chunks: list[RetrievedChunk]) -> list[dict]:
 
 def _build_context_block(chunks: list[RetrievedChunk]) -> str:
     parts = []
-    for chunk in chunks:
-        header = f"[Source: {chunk.document_name}"
+    for i, chunk in enumerate(chunks, start=1):
+        header = f"[{i}] [Source: {chunk.document_name}"
         if chunk.section_title:
             header += f" > {chunk.section_title}"
         header += "]"

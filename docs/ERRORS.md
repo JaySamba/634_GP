@@ -2,8 +2,20 @@
 # Every error encountered, root cause, and fix applied.
 # Updated by Claude Code whenever an error is resolved.
 
-Last updated: 2026-05-14
+Last updated: 2026-05-19
 Total errors resolved: 10
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NOTE — Chat Agent integration (2026-05-19)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+No errors during Chat Agent replacement. Key design decisions:
+- CSS scoped under .chat-app to avoid --accent / --bg-0 variable
+  collisions with the existing m1-* navigation styles.
+- Script load order: data.jsx → icons.jsx → profile.jsx → composer.jsx
+  → messages.jsx → welcome.jsx → right-panel.jsx → modals.jsx →
+  sidebar.jsx → app.jsx (sidebar depends on Profile, welcome on Composer).
+- Migration 003 must be run in Supabase SQL Editor before folder/pinned
+  features work in production.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ERROR 01 — voyageai package version not found

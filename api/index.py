@@ -18,7 +18,10 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from hr_agent.retrieval.retriever import retrieve
-from hr_agent.chat.agent import stream_response, chunks_to_sources
+from hr_agent.chat.agent import (
+    stream_response, chunks_to_sources,
+    create_conversation, load_history, list_conversations,
+)
 
 app = FastAPI(title="Musashi One GPT API")
 
@@ -34,6 +37,21 @@ class ChatRequest(BaseModel):
     query: str
     history: list[dict] = []
     agent_label: str = "HR Policy Agent"
+
+
+@app.get("/api/conversations")
+def list_convs(user_id: str = "default"):
+    return list_conversations(user_id)
+
+
+@app.post("/api/conversations")
+def new_conv(body: dict):
+    return {"id": create_conversation(body.get("user_id", "default"), body.get("title"))}
+
+
+@app.get("/api/conversations/{conv_id}/messages")
+def get_messages(conv_id: str):
+    return load_history(conv_id)
 
 
 @app.get("/api/health")

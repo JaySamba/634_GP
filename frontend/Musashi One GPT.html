@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="chat-agent/styles.css">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -880,6 +882,20 @@
     max-width: 78%;
     white-space: pre-wrap;
   }
+  /* Markdown rendered inside agent bubbles */
+  .m1-msg-md { white-space: normal; }
+  .m1-msg-md p { margin: 0 0 0.6em; }
+  .m1-msg-md p:last-child { margin-bottom: 0; }
+  .m1-msg-md strong { color: var(--ink); font-weight: 600; }
+  .m1-msg-md ol, .m1-msg-md ul { padding-left: 1.4em; margin: 0.4em 0 0.7em; }
+  .m1-msg-md li { margin-bottom: 0.25em; }
+  .m1-msg-md h1, .m1-msg-md h2, .m1-msg-md h3 {
+    font-size: 13px; font-weight: 600; margin: 0.8em 0 0.3em; color: var(--ink);
+  }
+  .m1-msg-md code {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    background: rgba(255,255,255,0.08); border-radius: 4px; padding: 1px 5px;
+  }
   .m1-msg-user .m1-msg-bubble {
     background: rgba(77, 190, 255, 0.14);
     border-color: rgba(77, 190, 255, 0.35);
@@ -1044,6 +1060,7 @@
 <div id="root"></div>
 
 <!-- React + Babel (pinned) -->
+<script src="https://unpkg.com/marked@9.1.6/marked.min.js" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
@@ -1051,6 +1068,18 @@
 <!-- Background engines (plain JS) -->
 <script src="musashi-one/shaders.js"></script>
 <script src="musashi-one/globe.js"></script>
+
+<!-- Chat Agent components (load order matters: data → icons → leaves → composites → app) -->
+<script type="text/babel" data-presets="react" src="chat-agent/data.jsx"></script>
+<script type="text/babel" data-presets="react" src="chat-agent/icons.jsx"></script>
+<script type="text/babel" data-presets="react" src="chat-agent/profile.jsx"></script>
+<script type="text/babel" data-presets="react" src="chat-agent/composer.jsx"></script>
+<script type="text/babel" data-presets="react" src="chat-agent/messages.jsx"></script>
+<script type="text/babel" data-presets="react" src="chat-agent/welcome.jsx"></script>
+<script type="text/babel" data-presets="react" src="chat-agent/right-panel.jsx"></script>
+<script type="text/babel" data-presets="react" src="chat-agent/modals.jsx"></script>
+<script type="text/babel" data-presets="react" src="chat-agent/sidebar.jsx"></script>
+<script type="text/babel" data-presets="react" src="chat-agent/app.jsx"></script>
 
 <!-- UI components + main app (JSX) -->
 <script type="text/babel" data-presets="react" src="musashi-one/panels.jsx"></script>

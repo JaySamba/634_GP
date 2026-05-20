@@ -549,6 +549,7 @@ function ChatPanel({ breadcrumb, onBack, agentLabel, accent }) {
   const [sources, setSources] = React.useState([]);
   const [input, setInput] = React.useState('');
   const [thinking, setThinking] = React.useState(false);
+  const [streaming, setStreaming] = React.useState(false);
   const scrollRef = React.useRef(null);
 
   React.useEffect(() => {
@@ -604,6 +605,7 @@ function ChatPanel({ breadcrumb, onBack, agentLabel, accent }) {
             if (payload.text) {
               if (firstToken) {
                 setThinking(false);
+                setStreaming(true);
                 setMessages(m => [...m, { role: 'agent', text: '' }]);
                 firstToken = false;
               }
@@ -613,10 +615,11 @@ function ChatPanel({ breadcrumb, onBack, agentLabel, accent }) {
           } catch {}
         }
       }
-      // Ensure thinking is off even if no tokens arrived
       setThinking(false);
+      setStreaming(false);
     } catch (e) {
       setThinking(false);
+      setStreaming(false);
       setMessages(m => [...m, { role: 'agent', text: `Could not reach the backend API (${e.message}). Make sure the API server is running: .\\run.ps1` }]);
     }
   };
@@ -652,7 +655,14 @@ function ChatPanel({ breadcrumb, onBack, agentLabel, accent }) {
             <div key={i} className={`m1-msg m1-msg-${m.role}`}>
               {m.role === 'agent' && <div className="m1-msg-avatar">◉</div>}
               <div className="m1-msg-bubble">
-                {m.role === 'agent' ? <ScrambleText text={m.text} /> : m.text}
+                {m.role === 'agent'
+                  ? (streaming && i === messages.length - 1)
+                    ? <ScrambleText text={m.text} />
+                    : <span
+                        className="m1-msg-md"
+                        dangerouslySetInnerHTML={{ __html: window.marked.parse(m.text) }}
+                      />
+                  : m.text}
               </div>
             </div>
           ))}
