@@ -484,3 +484,16 @@ E2E TEST SUITE — Playwright                                  COMPLETE
 
   Run all:
     npx playwright test
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DOCS — Technical Specification + Future Roadmap              COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  [done] docs/TECHNICAL_SPEC.md created
+         - Full technical spec: architecture, stack, data flow, DB schema,
+           security/guardrails, current limitations
+         - Future enhancements: Azure PostgreSQL migration, Azure AI Search,
+           Azure Static Web Apps hosting, automated ingest, RBAC, analytics,
+           multilingual support
+         - Written for all audiences (engineers, managers, HR leads)
+         - Includes priority table for all enhancements
