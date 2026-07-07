@@ -7,6 +7,9 @@
     "test:api": "playwright test --project=api",
     "test:report": "playwright show-report"
   },
+  "dependencies": {
+    "@vercel/analytics": "^1.4.1"
+  },
   "devDependencies": {
     "@playwright/test": "^1.44.0"
   }
